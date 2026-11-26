@@ -3,9 +3,13 @@ name: Roblox Version Checker
 
 on:
   schedule:
-    - cron: "3-59/5 * * * *"
+    - cron: "*/5 * * * *"
 
   workflow_dispatch:
+
+concurrency:
+  group: roblox-version-check
+  cancel-in-progress: false
 
 permissions:
   contents: write
@@ -41,5 +45,8 @@ jobs:
 
           if ! git diff --cached --quiet; then
             git commit -m "Update saved Roblox version"
-            git push
+
+            git pull --rebase origin main
+
+            git push origin main
           fi
