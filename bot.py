@@ -6,7 +6,7 @@ WEBHOOK_URL = os.environ["DISCORD_WEBHOOK_URL"]
 DISCORD_USER_ID = os.environ["DISCORD_USER_ID"]
 
 VERSION_URL = (
-    "https://clientsettings.roblox.com"
+    "https://clientsettingscdn.roblox.com"
     "/v2/client-version/WindowsPlayer"
 )
 
@@ -18,28 +18,38 @@ def check_roblox_version():
     response = requests.get(VERSION_URL, timeout=20)
     response.raise_for_status()
 
-    current_version = response.json()["version"]
+    data = response.json()
 
-    print(f"Current Roblox version: {current_version}")
+    current_version = data["version"]
+    current_hash = data["clientVersionUpload"]
+
+    print(f"Roblox version: {current_version}")
+    print(f"Roblox build: {current_hash}")
 
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as file:
-            previous_version = json.load(file)["version"]
+            previous_data = json.load(file)
+
+        previous_version = previous_data.get("version")
+        previous_hash = previous_data.get("clientVersionUpload")
     else:
         previous_version = None
+        previous_hash = None
 
-    if previous_version is None:
+    if not previous_hash:
 
-        print("Initial version saved. No notification needed.")
+        print("Initial Roblox build saved. No notification needed.")
 
-    elif current_version != previous_version:
+    elif current_hash != previous_hash:
 
-        print("Roblox version changed!")
+        print("Roblox build changed!")
 
         message = (
             f"<@{DISCORD_USER_ID}> Roblox has updated!\n\n"
             f"**New Version:** `{current_version}`\n"
-            f"**Previous Version:** `{previous_version}`\n\n"
+            f"**New Build:** `{current_hash}`\n\n"
+            f"**Previous Version:** `{previous_version}`\n"
+            f"**Previous Build:** `{previous_hash}`\n\n"
             "Hurry up and fix the external."
         )
 
@@ -62,7 +72,10 @@ def check_roblox_version():
         print("No Roblox update detected.")
 
     with open(STATE_FILE, "w") as file:
-        json.dump({"version": current_version}, file)
+        json.dump({
+            "version": current_version,
+            "clientVersionUpload": current_hash
+        }, file)
 
 
 if __name__ == "__main__":
