@@ -14,10 +14,13 @@ STATE_FILE = "last_version.json"
 
 
 def check_roblox_version():
+
     response = requests.get(VERSION_URL, timeout=20)
     response.raise_for_status()
 
     current_version = response.json()["version"]
+
+    print(f"Current Roblox version: {current_version}")
 
     if os.path.exists(STATE_FILE):
         with open(STATE_FILE, "r") as file:
@@ -26,17 +29,21 @@ def check_roblox_version():
         previous_version = None
 
     if previous_version is None:
-        print(f"Initial Roblox version: {current_version}")
+
+        print("Initial version saved. No notification needed.")
 
     elif current_version != previous_version:
+
         print("Roblox version changed!")
 
         message = (
-            f"<@{DISCORD_USER_ID}> "
-            "Roblox has updated! Hurry up and fix the external."
+            f"<@{DISCORD_USER_ID}> Roblox has updated!\n\n"
+            f"**New Version:** `{current_version}`\n"
+            f"**Previous Version:** `{previous_version}`\n\n"
+            "Hurry up and fix the external."
         )
 
-        requests.post(
+        notification = requests.post(
             WEBHOOK_URL,
             json={
                 "content": message,
@@ -45,7 +52,14 @@ def check_roblox_version():
                 }
             },
             timeout=20
-        ).raise_for_status()
+        )
+
+        notification.raise_for_status()
+
+        print("Discord notification sent!")
+
+    else:
+        print("No Roblox update detected.")
 
     with open(STATE_FILE, "w") as file:
         json.dump({"version": current_version}, file)
