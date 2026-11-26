@@ -46,10 +46,8 @@ def check_roblox_version():
 
         message = (
             f"<@{DISCORD_USER_ID}> Roblox has updated!\n\n"
-            f"**New Version:** `{current_version}`\n"
-            f"**New Build:** `{current_hash}`\n\n"
-            f"**Previous Version:** `{previous_version}`\n"
-            f"**Previous Build:** `{previous_hash}`\n\n"
+            f"**New Version:** `{current_hash}`\n\n"
+            f"**Previous Version:** `{previous_hash}`\n\n"
             "Hurry up and fix the external."
         )
 
